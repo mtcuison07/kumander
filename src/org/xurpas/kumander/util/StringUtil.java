@@ -15,6 +15,9 @@
 
 package org.xurpas.kumander.util;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+
 /**
  * Static utility functions for trimming strings and converting byte
  * counts to strings.
@@ -81,5 +84,21 @@ public final class StringUtil {
    {
      return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
    }   
+   
+   //mac
+    public static String NumberFormat(double fnValue, String fsPattern){
+        DecimalFormat myFormatter = new DecimalFormat(fsPattern);
+        return myFormatter.format(fnValue);
+    }
+    
+    public static String NumberFormat(BigDecimal fnValue, String fsPattern){
+        DecimalFormat myFormatter = new DecimalFormat(fsPattern);
+        return myFormatter.format(fnValue);
+    }
+    
+    public static String NumberFormat(Number fnValue, String fsPattern){
+        DecimalFormat myFormatter = new DecimalFormat(fsPattern);
+        return myFormatter.format(fnValue);
+    }
 }
 
