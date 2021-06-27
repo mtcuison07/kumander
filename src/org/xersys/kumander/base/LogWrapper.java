@@ -1,4 +1,4 @@
-package org.xurpas.kumander.base;
+package org.xersys.kumander.base;
 
 import java.util.logging.FileHandler;
 import java.util.logging.Level;

@@ -1,4 +1,4 @@
-package org.xurpas.kumander.util;
+package org.xersys.kumander.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

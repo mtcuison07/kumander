@@ -1,4 +1,4 @@
-package org.xurpas.kumander.crypt;
+package org.xersys.kumander.crypt;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;

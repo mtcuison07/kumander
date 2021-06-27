@@ -1,10 +1,12 @@
 /**
  * @author Michael Cuison 2020.12.23
  */
-package org.xurpas.kumander.iface;
+package org.xersys.kumander.iface;
 
 public interface XProperty {
     public void setProductID(String fsValue);
+    public String getProductID();
+    
     public void setConfigDIR(String fsValue);
     
     public boolean loadConfig();
@@ -19,7 +21,6 @@ public interface XProperty {
     public String getPort();
     public String getDBHost();
     public String getMainServer();
-    public String getCryptType();
     public String getClientID();
     
     public void setDBHost(String fsValue);
