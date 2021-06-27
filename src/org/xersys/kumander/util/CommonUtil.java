@@ -1,4 +1,4 @@
-package org.xurpas.kumander.util;
+package org.xersys.kumander.util;
 
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;

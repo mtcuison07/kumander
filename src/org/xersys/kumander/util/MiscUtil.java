@@ -1,4 +1,4 @@
-package org.xurpas.kumander.util;
+package org.xersys.kumander.util;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
-import org.xurpas.kumander.iface.XEntity;
+import org.xersys.kumander.iface.XEntity;
 
 public class MiscUtil {
     /**
@@ -256,9 +256,9 @@ public class MiscUtil {
         if(lnCol2 > 0)
             lsSQL.append( ", dModified = " + SQLUtil.toSQL(foNewEntity.getValue(lnCol2)));
 
-        System.out.println("UPDATE " + foNewEntity.getTable() + " SET" +
-                            lsSQL.toString().substring(1) +
-                            " WHERE " + fsCondition);
+//        System.out.println("UPDATE " + foNewEntity.getTable() + " SET" +
+//                            lsSQL.toString().substring(1) +
+//                            " WHERE " + fsCondition);
 
         return "UPDATE " + foNewEntity.getTable() + " SET" +
                 lsSQL.toString().substring(1) +
@@ -346,6 +346,7 @@ public class MiscUtil {
                 close(loStmt);
             }
         }
+        
         try {
             if (!fbSeries){
                 lsSQL = "SELECT " + fsFieldNme
@@ -387,6 +388,155 @@ public class MiscUtil {
 
         return lsNextCde;
     }
+    
+    public static String getNextCode(
+        String fsTableNme,
+        String fsFieldNme,
+        boolean fbYearFormat,
+        java.sql.Connection foCon,
+        String fsBranchCd){
+        String lsNextCde="";
+        int lnNext;
+        String lsPref = fsBranchCd;
+
+        String lsSQL = null;
+        Statement loStmt = null;
+        ResultSet loRS = null;
+
+        if(fbYearFormat){
+            try {
+                if(foCon.getMetaData().getDriverName().equalsIgnoreCase("SQLiteJDBC")){
+                    lsSQL = "SELECT STRFTIME('%Y', DATETIME('now','localtime'))";
+                }else{
+                    //assume that default database is MySQL ODBC
+                    lsSQL = "SELECT YEAR(CURRENT_TIMESTAMP)";
+                }          
+            
+                loStmt = foCon.createStatement();
+                loRS = loStmt.executeQuery(lsSQL);
+                loRS.next();
+                System.out.println(loRS.getString(1));
+                lsPref = lsPref + loRS.getString(1).substring(2);
+                System.out.println(lsPref);
+            } 
+            catch (SQLException ex) {
+                ex.printStackTrace();
+                Logger.getLogger(MiscUtil.class.getName()).log(Level.SEVERE, null, ex);
+                return "";
+            }
+            finally{
+                close(loRS);
+                close(loStmt);
+            }
+        }
+      
+        lsSQL = "SELECT " + fsFieldNme
+                + " FROM " + fsTableNme
+                + " ORDER BY " + fsFieldNme + " DESC "
+                + " LIMIT 1";
+
+        if(!lsPref.isEmpty())
+            lsSQL = addCondition(lsSQL, fsFieldNme + " LIKE " + SQLUtil.toSQL(lsPref + "%"));
+      
+        try {
+            loStmt = foCon.createStatement();
+            loRS = loStmt.executeQuery(lsSQL);
+            if(loRS.next()){
+               lnNext = Integer.parseInt(loRS.getString(1).substring(lsPref.length()));
+            }
+            else
+               lnNext = 0;
+
+            lsNextCde = lsPref + StringUtils.leftPad(String.valueOf(lnNext + 1), loRS.getMetaData().getPrecision(1) - lsPref.length() , "0");
+
+        } 
+        catch (SQLException ex) {
+            ex.printStackTrace();
+            Logger.getLogger(MiscUtil.class.getName()).log(Level.SEVERE, null, ex);
+            lsNextCde = "";
+        }
+        finally{
+            close(loRS);
+            close(loStmt);
+        }
+
+        return lsNextCde;
+    }
+
+    public static String getNextCode(
+      String fsTableNme,
+      String fsFieldNme,
+      boolean fbYearFormat,
+      java.sql.Connection foCon,
+      String fsBranchCd,
+      String fsFilter){
+      String lsNextCde="";
+      int lnNext;
+      String lsPref = fsBranchCd;
+
+      String lsSQL = null;
+      Statement loStmt = null;
+      ResultSet loRS = null;
+
+      if(fbYearFormat){
+         try {
+            if(foCon.getMetaData().getDriverName().equalsIgnoreCase("SQLiteJDBC")){
+               lsSQL = "SELECT STRFTIME('%Y', DATETIME('now','localtime'))";
+            }else{
+               //assume that default database is MySQL ODBC
+               lsSQL = "SELECT YEAR(CURRENT_TIMESTAMP)";
+            }          
+            loStmt = foCon.createStatement();
+            loRS = loStmt.executeQuery(lsSQL);
+            loRS.next();
+            lsPref = lsPref + loRS.getString(1).substring(2);
+         } 
+         catch (SQLException ex) {
+            ex.printStackTrace();
+            Logger.getLogger(MiscUtil.class.getName()).log(Level.SEVERE, null, ex);
+            return "";
+         }
+         finally{
+            close(loRS);
+            close(loStmt);
+         }
+      }
+
+      lsSQL = "SELECT " + fsFieldNme
+           + " FROM " + fsTableNme
+           + " ORDER BY " + fsFieldNme + " DESC "
+           + " LIMIT 1";
+
+      if(!lsPref.isEmpty())
+         lsSQL = addCondition(lsSQL, fsFieldNme + " LIKE " + SQLUtil.toSQL(lsPref + "%"));
+         
+      lsSQL = addCondition(lsSQL, fsFilter);
+      
+      try {
+         loStmt = foCon.createStatement();
+         loRS = loStmt.executeQuery(lsSQL);
+         if(loRS.next()){
+            lnNext = Integer.parseInt(loRS.getString(1).substring(lsPref.length()));
+         }
+         else
+            lnNext = 0;
+
+
+         lsNextCde = lsPref + StringUtils.leftPad(String.valueOf(lnNext + 1), loRS.getMetaData().getPrecision(1) - lsPref.length() , "0");
+
+      } 
+      catch (SQLException ex) {
+         ex.printStackTrace();
+         Logger.getLogger(MiscUtil.class.getName()).log(Level.SEVERE, null, ex);
+         lsNextCde = "";
+      }
+      finally{
+         close(loRS);
+         close(loStmt);
+      }
+
+      return lsNextCde;
+   }
 
     public static String makeSelect(XEntity foObject) {
         StringBuilder lsSQL = new StringBuilder();

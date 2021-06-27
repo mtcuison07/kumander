@@ -1,9 +1,9 @@
 /**
  * @author Michael Cuison 2020.12.23
  */
-package org.xurpas.kumander.crypt;
+package org.xersys.kumander.crypt;
 
-import org.xurpas.kumander.iface.XCrypt;
+import org.xersys.kumander.iface.XCrypt;
 
 public class CryptFactory {
     public enum CrypType{

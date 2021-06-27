@@ -1,4 +1,4 @@
-package org.xurpas.kumander.util;
+package org.xersys.kumander.util;
 
 /*
  * Copyright (C) 2001-2011 Stephen Ostermiller

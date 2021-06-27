@@ -1,7 +1,7 @@
 /**
  * @author Michael Cuison 2020.12.23
  */
-package org.xurpas.kumander.crypt;
+package org.xersys.kumander.crypt;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -13,7 +13,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.xurpas.kumander.iface.XCrypt;
+import org.xersys.kumander.iface.XCrypt;
 
 public class MySQLAES implements XCrypt{
     @Override

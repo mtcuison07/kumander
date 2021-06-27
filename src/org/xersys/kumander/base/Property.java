@@ -1,7 +1,7 @@
 /**
  * @author Michael Cuison 2020.12.23
  */
-package org.xurpas.kumander.base;
+package org.xersys.kumander.base;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,31 +10,35 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.xurpas.kumander.iface.XProperty;
+import org.xersys.kumander.crypt.MySQLAES;
+import org.xersys.kumander.iface.XProperty;
 
 public class Property implements XProperty{
-    Properties prop;
+    private final String SIGNATURE = "07071991";
     
-    String psProductID = "";
-    String psMessage = "";
+    private MySQLAES aes = null;
+    private Properties prop = null;
     
-    String psDBSrvrMn = null;  // ip address of central server
-    String psDBSrvrNm = null;
-    String psDBNameXX = null;
-    String psDBPassWD = null;
-    String psDBUserNm = null;
-    String psDBPortNo = null;
-    String psDriverNm = null;
-    String psClientID = null;
+    private String psProductID = "";
+    private String psMessage = "";
     
-    String psCryptTyp = "0";
+    private String psDBSrvrMn = null;  // ip address of central server
+    private String psDBSrvrNm = null;
+    private String psDBNameXX = null;
+    private String psDBPassWD = null;
+    private String psDBUserNm = null;
+    private String psDBPortNo = null;
+    private String psDriverNm = null;
+    private String psClientID = null;
     
     public Property() {
         prop = new Properties();
+        aes = new MySQLAES();
     }
     
     public Property(String fsFile, String fsProdctID){
         prop = new Properties();
+        aes = new MySQLAES();
       
         try {
             prop.load(new FileInputStream(fsFile));
@@ -46,6 +50,7 @@ public class Property implements XProperty{
     
     public Property(InputStream foValue, String fsProdctID){
         prop = new Properties();
+        aes = new MySQLAES();
       
         try {
             prop.load(foValue);
@@ -72,27 +77,30 @@ public class Property implements XProperty{
     }
     
     @Override
+    public String getProductID() {
+        return psProductID;
+    }
+    
+    @Override
     public boolean loadConfig() {
-        try{        
-            if(getConfig("-CryptType") != null){
-                psCryptTyp = getConfig("-CryptType");
-            }
-         
-            psDBNameXX = getConfig("-Database");
-            psDBSrvrNm = getConfig("-ServerName");
-            psDBSrvrMn = getConfig("-MainServer");         
+        System.out.println("Loading database configuration.");
+        
+        try{                 
+            psDBNameXX = aes.Decrypt(getConfig("Database"), SIGNATURE);
+            psDBSrvrNm = aes.Decrypt(getConfig("ServerName"), SIGNATURE);
+            psDBSrvrMn = aes.Decrypt(getConfig("MainServer"), SIGNATURE);         
             
-            if(!getConfig("-UserName").isEmpty()){
-                psDBUserNm = getConfig("-UserName");
-                psDBPassWD = getConfig("-Password");
+            if(!getConfig("UserName").isEmpty()){
+                psDBUserNm = aes.Decrypt(getConfig("UserName"), SIGNATURE);
+                psDBPassWD = aes.Decrypt(getConfig("Password"), SIGNATURE);
             } else{
                 psDBUserNm = "";
                 psDBPassWD = "";
             }
 
-            psDriverNm = getConfig("-DBDriver");
-            psDBPortNo = getConfig("-Port");
-            psClientID = getConfig("-ClientID");         
+            psDBPortNo = aes.Decrypt(getConfig("Port"), SIGNATURE);
+            psDriverNm = getConfig("DBDriver");
+            psClientID = getConfig("ClientID");         
         }catch(NumberFormatException ex){
             ex.printStackTrace();
             setMessage(ex.getMessage());
@@ -115,18 +123,57 @@ public class Property implements XProperty{
     
     @Override
     public String getConfig(String fsValue) {
-        return prop.getProperty(psProductID + fsValue);
+        return prop.getProperty(psProductID + "-" + fsValue);
     }
 
     @Override
     public void setConfig(String fsConfig, String fsValue) {
-        prop.setProperty(psProductID + fsConfig, fsValue);
+        switch(fsConfig){
+            case "ServerName":
+                psDBSrvrNm = fsValue;
+                break;
+            case "MainServer":
+                psDBSrvrMn = fsValue;
+                break;
+            case "Database":
+                psDBNameXX = fsValue;
+                break;
+            case "UserName":
+                psDBUserNm = fsValue;
+                break;
+            case "Password":
+                psDBPassWD = fsValue;
+                break;
+            case "Port":
+                psDBPortNo = fsValue;
+                break;
+            case "DBDriver":
+                psDriverNm = fsValue;
+                break;
+            case "ClientID":
+                psClientID = fsValue;
+                break;
+            default:
+                return;
+        }
+        
+        prop.setProperty(psProductID + "-" + fsConfig, fsValue);
     }
 
     @Override
     public void save(String fsFileName) {
         try {
-            prop.store(new FileOutputStream(fsFileName), null);
+            Properties loProp = prop;
+            
+            loProp.setProperty(psProductID + "-ServerName", aes.Encrypt(getDBHost(), SIGNATURE));
+            loProp.setProperty(psProductID + "-MainServer", aes.Encrypt(getMainServer(), SIGNATURE));
+            loProp.setProperty(psProductID + "-Database", aes.Encrypt(getDBName(), SIGNATURE));
+            loProp.setProperty(psProductID + "-UserName", aes.Encrypt(getUser(), SIGNATURE));
+            loProp.setProperty(psProductID + "-Password", aes.Encrypt(getPassword(), SIGNATURE));
+            loProp.setProperty(psProductID + "-Port", aes.Encrypt(getPort(), SIGNATURE));
+            
+            loProp.store(new FileOutputStream(fsFileName), null);
+            loProp = null;
         } catch (IOException ex) {
             ex.printStackTrace();
             Logger.getLogger(Property.class.getName()).log(Level.SEVERE, null, ex);
@@ -171,11 +218,6 @@ public class Property implements XProperty{
     @Override
     public String getPassword() {
         return psDBPassWD;
-    }
-    
-    @Override
-    public String getCryptType() {
-        return psCryptTyp;
     }
 
     @Override

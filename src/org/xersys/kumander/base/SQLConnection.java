@@ -1,24 +1,19 @@
 /**
  * @author Michael Cuison 2020.12.21
  */
-package org.xurpas.kumander.base;
+package org.xersys.kumander.base;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import org.xurpas.kumander.iface.XConnection;
-import org.xurpas.kumander.iface.XCrypt;
-import org.xurpas.kumander.iface.XProperty;
-import org.xurpas.kumander.util.MiscUtil;
+import org.xersys.kumander.iface.XConnection;
+import org.xersys.kumander.iface.XProperty;
+import org.xersys.kumander.util.MiscUtil;
 
-public class SQLConnection implements XConnection{
-    private final String SIGNATURE = "08220326";
-    
+public class SQLConnection implements XConnection{   
     private XProperty poProp = null;
-    private XCrypt poCrypt = null;
-    private String psUserIDxx = "";
     
     private boolean pbIsOnline = false;
     private Connection poConn;
@@ -28,26 +23,11 @@ public class SQLConnection implements XConnection{
     public void setProperty(XProperty foValue) {
         poProp = foValue;
     }
-
-    @Override
-    public void setCrypt(XCrypt foValue) {
-        poCrypt = foValue;
-    }
-
-    @Override
-    public XCrypt getCrypt() {
-        return poCrypt;
-    }
     
     @Override
-    public void setUserID(String fsValue) {
-        psUserIDxx = fsValue;
-    }
-
-    @Override
-    public String getUserID() {
-        return psUserIDxx;
-    }
+    public XProperty getProperty() {
+        return poProp;
+    }   
     
     @Override
     public void IsOnline(boolean fbValue) {
@@ -57,18 +37,6 @@ public class SQLConnection implements XConnection{
     @Override
     public boolean IsOnline() {
         return pbIsOnline;
-    }
-
-    @Override
-    public boolean connect() {        
-        Connection loCon = doConnect();        
-        
-        if (loCon == null) return false;
-        
-        System.out.println("System successfully connected to server.");
-        poConn = loCon;
-
-        return true;
     }
     
     @Override
@@ -215,32 +183,30 @@ public class SQLConnection implements XConnection{
         psMessage = fsValue;
     }
     
-    private Connection doConnect(){
-        if (poCrypt == null){
-            setMessage("UNSET encryption engine.");
-            return null;
-        }
-        
-        if (poCrypt == null){
+    @Override
+    public Connection doConnect(){
+        if (poProp == null){
             setMessage("UNSET server configuration.");
             return null;
         }
         
         System.out.println("Initializing connection.");
       
-        String lsDBSrvrMn = poProp.getMainServer();
         String lsDBSrvrNm = poProp.getDBHost();
         String lsDBNameXX = poProp.getDBName();
-        String lsDBPortNo = poProp.getPort();
         
         String lsDBUserNm = "";
         String lsPassword = "";
+        String lsDBSrvrMn = "";
+        String lsDBPortNo = "";
         
-        if (!(poProp.getUser() == null || poProp.getUser().isEmpty()))
-            lsDBUserNm = poCrypt.Decrypt(poProp.getUser(), SIGNATURE);
-        
-        if (!(poProp.getPassword() == null || poProp.getPassword().isEmpty()))
-            lsPassword = poCrypt.Decrypt(poProp.getPassword(), SIGNATURE);
+        if (!(poProp.getUser() == null || poProp.getUser().isEmpty()) &&
+            !(poProp.getPassword() == null || poProp.getPassword().isEmpty())){
+            lsDBUserNm = poProp.getUser();
+            lsPassword = poProp.getPassword();
+            lsDBPortNo = poProp.getPort();
+            lsDBSrvrMn = poProp.getMainServer();
+        }
         
         Connection loCon = null;        
         
@@ -249,10 +215,10 @@ public class SQLConnection implements XConnection{
                 loCon = MiscUtil.getConnection(lsDBSrvrNm, lsDBNameXX);
             } else{
                 if (pbIsOnline){
-                    System.out.println("Connecting to " + lsDBSrvrMn);
+                    System.out.println("Connecting to " + lsDBSrvrMn + ".");
                     loCon = MiscUtil.getConnection(lsDBSrvrMn, lsDBNameXX, lsDBUserNm, lsPassword, lsDBPortNo);
                 } else{
-                    System.out.println("Connecting to " + lsDBSrvrNm);            
+                    System.out.println("Connecting to " + lsDBSrvrNm + ".");            
                     loCon = MiscUtil.getConnection(lsDBSrvrNm, lsDBNameXX, lsDBUserNm, lsPassword, lsDBPortNo);
                 }
             }
