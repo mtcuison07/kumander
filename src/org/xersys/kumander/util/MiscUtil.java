@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.xersys.kumander.iface.XEntity;
 
 public class MiscUtil {
@@ -716,5 +718,50 @@ public class MiscUtil {
             return "";
         else
             return "UPDATE " + fsTable + " SET" + lsSQL.toString().substring(1) + " WHERE " + fsWhere;
+    }
+    
+    public static JSONArray RS2JSON(ResultSet foSource){        
+        JSONArray loArray = new JSONArray();
+        JSONObject loJSON;
+        
+        try {
+            while (foSource.next()){
+                loJSON = new JSONObject();
+                
+                for (int lnCtr = 1; lnCtr <= foSource.getMetaData().getColumnCount(); lnCtr++){
+                    loJSON.put(foSource.getMetaData().getColumnLabel(lnCtr), foSource.getObject(lnCtr));
+                }
+                loArray.add(loJSON);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        
+        return loArray;
+    }
+    
+    public static JSONArray RS2JSON(ResultSet foSource, String fsFields){   
+        if (fsFields.isEmpty()) return RS2JSON(foSource);
+        
+        JSONArray loArray = new JSONArray();
+        JSONObject loJSON;
+        String lasFields [] = fsFields.split("»");
+        int lnCtr;
+        
+        try {
+            while (foSource.next()){
+                loJSON = new JSONObject();
+                
+                for(lnCtr = 0; lnCtr <= lasFields.length - 1; lnCtr++){
+                    loJSON.put(lasFields[lnCtr], foSource.getObject(lasFields[lnCtr]));
+                }                
+                
+                loArray.add(loJSON);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        
+        return loArray;
     }
 }
