@@ -4,6 +4,8 @@
 
 package org.xersys.kumander.iface;
 
+import org.json.simple.JSONObject;
+
 public interface XMasDetTrans {
     void setListener(LMasDetTrans foValue);
     void setSaveToDisk(boolean fbValue);
@@ -22,8 +24,8 @@ public interface XMasDetTrans {
     boolean addDetail();
     boolean delDetail(int fnRow);
     
-    boolean SearchMaster(String fsFieldNm, Object foValue);
-    boolean SearchDetail(int fnRow, String fsFieldNm, Object foValue);
+    JSONObject SearchMaster(String fsFieldNm, Object foValue);
+    JSONObject SearchDetail(int fnRow, String fsFieldNm, Object foValue);
     
     boolean NewTransaction();
     boolean SaveTransaction(boolean fbConfirmed);
