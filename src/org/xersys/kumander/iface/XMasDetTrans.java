@@ -5,6 +5,7 @@
 package org.xersys.kumander.iface;
 
 import org.json.simple.JSONObject;
+import org.xersys.kumander.contants.SearchEnum;
 
 public interface XMasDetTrans {
     void setListener(LMasDetTrans foValue);
@@ -26,6 +27,7 @@ public interface XMasDetTrans {
     
     JSONObject SearchMaster(String fsFieldNm, Object foValue);
     JSONObject SearchDetail(int fnRow, String fsFieldNm, Object foValue);
+    JSONObject Search(SearchEnum.Type foType, String fsValue, String fsKey, String fsFilter, int fnMaxRow, boolean fbExact);
     
     boolean NewTransaction();
     boolean SaveTransaction(boolean fbConfirmed);

@@ -100,7 +100,12 @@ public class Nautilus implements XNautilus{
 
     @Override
     public Object getSysConfig(String fsValue) {
-        return null;
+        switch (fsValue){
+            case "sBranchCd":
+                return "X001";
+            default:
+                return null;
+        }
     }
 
     @Override
