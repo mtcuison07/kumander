@@ -30,6 +30,7 @@ public interface XMasDetTrans {
     JSONObject Search(SearchEnum.Type foType, String fsValue, String fsKey, String fsFilter, int fnMaxRow, boolean fbExact);
     
     boolean NewTransaction();
+    boolean NewTransaction(String fsOrderNox);
     boolean SaveTransaction(boolean fbConfirmed);
     boolean SearchTransaction();
     boolean OpenTransaction(String fsTransNox);
