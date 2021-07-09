@@ -2,18 +2,22 @@ package org.xersys.kumander.util;
 
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONObject;
+import org.xersys.kumander.iface.XNautilus;
 
 public class CommonUtil {
-    /**
-     * Gets the name of the computer.
-     * 
-     * @return the computer name.
-     */
     public static String getPCName(){
         try{
             return InetAddress.getLocalHost().getHostName();
@@ -136,5 +140,109 @@ public class CommonUtil {
     
     public static long dateDiff(Date date1, Date date2){
         return (date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24);
+    }
+    
+    public static String getNextReference(Connection foConnection, String fsTableNme, String fsFieldNme, String fsFilter){
+        if (foConnection == null) return "";
+        if (fsTableNme.isEmpty()) return "";
+        if (fsFieldNme.isEmpty()) return "";
+        
+        String lsSQL = ""; 
+        String lsPref = "";
+        int lnNext = 0;
+        
+        Statement loStmt = null;
+        ResultSet loRS = null;
+        
+        try {
+            lsSQL = "SELECT " + fsFieldNme + 
+                    " FROM " + fsTableNme +
+                    " ORDER BY " + fsFieldNme + " DESC LIMIT 1"; 
+            
+            if (!fsFilter.isEmpty()) lsSQL = MiscUtil.addCondition(lsSQL, fsFilter);
+            
+            loStmt = foConnection.createStatement();
+            loRS = loStmt.executeQuery(lsSQL);
+            
+            if (loRS.next()) lnNext = Integer.parseInt(loRS.getString(1).substring(lsPref.length()));
+            
+            lsSQL = lsPref + StringUtils.leftPad(String.valueOf(lnNext + 1), loRS.getMetaData().getPrecision(1) - lsPref.length() , "0");;
+            
+            
+        } catch (SQLException ex) {
+            System.err.print(ex.getMessage());
+            lsSQL = "";
+        } finally{
+            MiscUtil.close(loRS);
+            MiscUtil.close(loStmt);
+        }
+        
+        return lsSQL;
+    }
+    
+    public static boolean saveTempOrder(XNautilus foNautilus, String fsSourceCd, String fsOrderNox, String fsPayloadx){
+        if (foNautilus == null) return false;
+        if (fsSourceCd == null) return false;
+        
+        String lsSQL = "INSERT INTO xxxTempTransactions SET" +
+                            "  sSourceCd = " + SQLUtil.toSQL(fsSourceCd) +
+                            ", sOrderNox = " + SQLUtil.toSQL(fsOrderNox) +
+                            ", dCreatedx = " + SQLUtil.toSQL(foNautilus.getServerDate()) +
+                            ", sPayloadx = '" + fsPayloadx + "'" +
+                            ", cRecdStat = '1'";
+        
+        return foNautilus.executeUpdate(lsSQL) != 0;
+    }
+    
+    public static boolean saveTempOrder(XNautilus foNautilus, String fsSourceCd, String fsOrderNox, String fsPayloadx, String fsRecdStat){
+        if (foNautilus == null) return false;
+        
+        String lsSQL = "UPDATE xxxTempTransactions SET" +
+                            ", sPayloadx = '" + fsPayloadx + "'" +
+                            ", cRecdStat = " + SQLUtil.toSQL(fsRecdStat) +
+                        " WHERE sSourceCd = " + SQLUtil.toSQL(fsSourceCd) +
+                            " AND sOrderNox = " + SQLUtil.toSQL(fsOrderNox);
+        
+        return foNautilus.executeUpdate(lsSQL) != 0;
+    }
+    
+    public static ResultSet getTempOrder(XNautilus foNautilus, String fsSourceCd, String fsOrderNox){
+        if (foNautilus == null) return null;
+        
+        String lsSQL = "SELECT * FROM xxxTempTransactions" +
+                        " WHERE sSourceCd = " + SQLUtil.toSQL(fsSourceCd);
+        
+        if (!fsOrderNox.isEmpty()) lsSQL = MiscUtil.addCondition(lsSQL, "sOrderNox = " + SQLUtil.toSQL(fsOrderNox));
+        
+        return foNautilus.executeQuery(lsSQL);
+    }
+    
+    public static String getTempOrder(XNautilus foNautilus, String fsSourceCd){
+        if (foNautilus == null) return null;
+        
+        String lsSQL = "";
+        ResultSet loRS = null;
+        
+        try {
+            lsSQL = "SELECT * FROM xxxTempTransactions" +
+                        " WHERE sSourceCd = " + SQLUtil.toSQL(fsSourceCd) +
+                            " AND cRecdStat = '1'" +
+                        " ORDER BY dCreatedx" +
+                        " LIMIT 1";
+            
+            loRS = foNautilus.executeQuery(lsSQL);
+            
+            if (loRS.next())
+                lsSQL = loRS.getString("sOrderNox");
+            else
+                lsSQL = "";
+        } catch (SQLException ex) {
+            System.err.print(ex.getMessage());
+            lsSQL = "";
+        } finally{
+            MiscUtil.close(loRS);
+        }
+        
+        return lsSQL;
     }
 }
