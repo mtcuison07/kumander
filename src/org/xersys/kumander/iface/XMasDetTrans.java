@@ -14,6 +14,9 @@ public interface XMasDetTrans {
     void setMaster(String fsFieldNm, Object foValue);
     Object getMaster(String fsFieldNm);
     
+    void setMaster(int fnIndex, Object foValue);
+    Object getMaster(int fnIndex);
+    
     void setDetail(int fnRow, String fsFieldNm, Object foValue);
     Object getDetail(int fnRow, String fsFieldNm);
     
