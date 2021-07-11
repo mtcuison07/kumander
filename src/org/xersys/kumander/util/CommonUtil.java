@@ -198,7 +198,7 @@ public class CommonUtil {
         if (foNautilus == null) return false;
         
         String lsSQL = "UPDATE xxxTempTransactions SET" +
-                            ", sPayloadx = '" + fsPayloadx + "'" +
+                            "  sPayloadx = '" + fsPayloadx + "'" +
                             ", cRecdStat = " + SQLUtil.toSQL(fsRecdStat) +
                         " WHERE sSourceCd = " + SQLUtil.toSQL(fsSourceCd) +
                             " AND sOrderNox = " + SQLUtil.toSQL(fsOrderNox);
