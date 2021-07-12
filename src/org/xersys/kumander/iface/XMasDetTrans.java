@@ -20,6 +20,9 @@ public interface XMasDetTrans {
     void setDetail(int fnRow, String fsFieldNm, Object foValue);
     Object getDetail(int fnRow, String fsFieldNm);
     
+    void setDetail(int fnRow, int fnIndex, Object foValue);
+    Object getDetail(int fnRow, int fnIndex);
+    
     String getMessage();
     
     int getEditMode();

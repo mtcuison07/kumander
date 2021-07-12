@@ -9,12 +9,9 @@ import java.sql.Statement;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONObject;
 import org.xersys.kumander.iface.XNautilus;
 
 public class CommonUtil {
