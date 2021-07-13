@@ -45,4 +45,6 @@ public interface XMasDetTrans {
     boolean CancelTransaction();
     boolean DeleteTransaction(String fsTransNox);
     boolean PostTransaction();
+    
+    Object TempTransactions();
 }
